@@ -4,6 +4,17 @@
 
 - [Previous Changelogs](https://github.com/eclipse-theia/theia/tree/master/doc/changelogs/)
 
+## v1.27.0 - ?
+
+<a name="breaking_changes_1.27.0">[Breaking Changes:](#breaking_changes_1.27.0)</a>
+* [debug, plugin-ext] [Debug view] Add dynamic debug configurations [#10212](https://github.com/eclipse-theia/theia/pull/10212)
+  - Changed signature of `DebugConfigurationManager.find` to receive a target DebugConfiguration instead of a configuration's name.  
+    NOTE: The original signature is still available but no longer used inside the framework and therefore marked as `deprecated`
+  - Multiple methods related to the selection of Debug configuration options were relocated from `debug-configuration-widget.tsx` to the new file `debug-configuration-select.tsx`.
+  - Removed optional interface property `DebugConfiguration.dynamic`.
+  - Added the following method to the interface `DebugService`: `fetchDynamicDebugConfiguration` as well as the property `onDidChangedDebugConfigurationProviders`.
+  - Removed method DebugPrefixConfiguration#runDynamicConfiguration
+
 ## v1.26.0 - 5/26/2022
 
 - [application-package] introduce application config prop `validatePreferencesSchema` to control whether to validate preferences on start [#11189](https://github.com/eclipse-theia/theia/pull/11189)
@@ -41,7 +52,6 @@
 - [workspace] added support to open multi-root workspaces from the cli [#11034](https://github.com/eclipse-theia/theia/pull/11034)
 
 <a name="breaking_changes_1.26.0">[Breaking Changes:](#breaking_changes_1.26.0)</a>
-
 - [callhierarchy] `paths.ts` and `glob.ts` moved to `core/src/common`; `language-selector.ts` moved to `editor/src/common`. Any imports will need to be updated [#11083](https://github.com/eclipse-theia/theia/pull/11083)
 - [electron] removed redundant config option `disallowReloadKeybinding` from `dev-packages/application-package/src/application-props.ts` file and corresponding test [#11099](https://github.com/eclipse-theia/theia/pull/11099)
 - [filesystem] remove deprecated APIs [#11176](https://github.com/eclipse-theia/theia/pull/1176):
