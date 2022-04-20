@@ -35,7 +35,9 @@ export interface SelectOption {
 export interface SelectComponentProps {
     options: SelectOption[]
     value?: string | number
-    onChange?: (option: SelectOption, index: number) => void
+    onChange?: (option: SelectOption, index: number) => void,
+    onBlur?: () => void,
+    onFocus?: () => void
 }
 
 export interface SelectComponentDropdownDimensions {
@@ -47,7 +49,6 @@ export interface SelectComponentDropdownDimensions {
 
 export interface SelectComponentState {
     dimensions?: SelectComponentDropdownDimensions
-    selected: number
     original: number
     hover: number
 }
@@ -61,16 +62,11 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
     protected optimalWidth = 0;
     protected optimalHeight = 0;
 
+    protected selected = 0;
     constructor(props: SelectComponentProps) {
         super(props);
-        let selected = 0;
-        if (typeof props.value === 'number') {
-            selected = props.value;
-        } else if (typeof props.value === 'string') {
-            selected = Math.max(props.options.findIndex(e => e.value === props.value), 0);
-        }
+        const selected = this.selected = this.resolveSelected(props);
         this.state = {
-            selected,
             original: selected,
             hover: selected
         };
@@ -84,8 +80,22 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
         this.dropdownElement = list;
     }
 
+    protected resolveSelected(props: SelectComponentProps): number {
+        let selected = 0;
+        if (typeof props.value === 'number') {
+            selected = props.value;
+        } else if (typeof props.value === 'string') {
+            selected = Math.max(props.options.findIndex(e => e.value === props.value), 0);
+        }
+
+        return selected;
+    }
+
+    override componentWillReceiveProps(nextProps: SelectComponentProps): void {
+        this.selected = this.resolveSelected(nextProps);
+    }
     get value(): string | number | undefined {
-        return this.props.options[this.state.selected].value ?? this.state.selected;
+        return this.props.options[this.selected].value ?? this.selected;
     }
 
     set value(value: string | number | undefined) {
@@ -96,8 +106,8 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
             index = this.props.options.findIndex(e => e.value === value);
         }
         if (index >= 0) {
+            this.selected = index;
             this.setState({
-                selected: index,
                 original: index,
                 hover: index
             });
@@ -161,9 +171,9 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
 
     override render(): React.ReactNode {
         const { options } = this.props;
-        let { selected } = this.state;
-        while (options[selected]?.separator) {
-            selected = (selected + 1) % this.props.options.length;
+        let selected = this.selected;
+        if (options[selected]?.separator) {
+            selected = this.nextNotSeparator(true);
         }
         const selectedItemLabel = options[selected].label ?? options[selected].value;
         return <>
@@ -173,7 +183,13 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
                 tabIndex={0}
                 className="theia-select-component"
                 onClick={e => this.handleClickEvent(e)}
-                onBlur={() => this.hide()}
+                onBlur={
+                    () => {
+                        this.hide();
+                        this.props.onBlur?.();
+                    }
+                }
+                onFocus={() => this.props.onFocus?.()}
                 onKeyDown={e => this.handleKeypress(e)}
             >
                 <div key="label" className="theia-select-component-label">{selectedItemLabel}</div>
@@ -183,40 +199,49 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
         </>;
     }
 
+    protected nextNotSeparator(forward: boolean): number {
+        const { options } = this.props;
+        const step = forward ? 1 : -1;
+        const length = this.props.options.length;
+        let selected = this.selected;
+        let count = 0;
+        while (count === 0 || (options[selected]?.separator && count < length)) {
+            selected = (selected + step) % length;
+            if (selected < 0) {
+                selected = length - 1;
+            }
+            count++;
+        }
+        return selected;
+    }
+
     protected handleKeypress(ev: React.KeyboardEvent<HTMLDivElement>): void {
         if (!this.fieldRef.current) {
             return;
         }
         if (ev.key === 'ArrowUp') {
-            let selected = this.state.selected;
-            if (selected <= 0) {
-                selected = this.props.options.length - 1;
-            } else {
-                selected--;
-            }
+            this.selected = this.nextNotSeparator(false);
             this.setState({
-                selected,
-                hover: selected
+                hover: this.selected
             });
         } else if (ev.key === 'ArrowDown') {
             if (this.state.dimensions) {
-                const selected = (this.state.selected + 1) % this.props.options.length;
+                this.selected = this.nextNotSeparator(true);
                 this.setState({
-                    selected,
-                    hover: selected
+                    hover: this.selected
                 });
             } else {
                 this.toggleVisibility();
+                this.selected = 0;
                 this.setState({
                     hover: 0,
-                    selected: 0
                 });
             }
         } else if (ev.key === 'Enter') {
             if (!this.state.dimensions) {
                 this.toggleVisibility();
             } else {
-                const selected = this.state.selected;
+                const selected = this.selected;
                 this.selectOption(selected, this.props.options[selected]);
             }
         } else if (ev.key === 'Escape' || ev.key === 'Tab') {
@@ -253,9 +278,9 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
 
     protected hide(index?: number): void {
         const selectedIndex = index === undefined ? this.state.original : index;
+        this.selected = selectedIndex;
         this.setState({
             dimensions: undefined,
-            selected: selectedIndex,
             original: selectedIndex,
             hover: selectedIndex
         });
