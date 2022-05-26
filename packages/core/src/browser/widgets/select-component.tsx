@@ -34,7 +34,7 @@ export interface SelectOption {
 
 export interface SelectComponentProps {
     options: SelectOption[]
-    value?: string | number
+    defaultValue?: string | number
     onChange?: (option: SelectOption, index: number) => void,
     onBlur?: () => void,
     onFocus?: () => void
@@ -49,6 +49,7 @@ export interface SelectComponentDropdownDimensions {
 
 export interface SelectComponentState {
     dimensions?: SelectComponentDropdownDimensions
+    selected: number
     original: number
     hover: number
 }
@@ -62,11 +63,16 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
     protected optimalWidth = 0;
     protected optimalHeight = 0;
 
-    protected selected = 0;
     constructor(props: SelectComponentProps) {
         super(props);
-        const selected = this.selected = this.resolveSelected(props);
+        let selected = 0;
+        if (typeof props.defaultValue === 'number') {
+            selected = props.defaultValue;
+        } else if (typeof props.defaultValue === 'string') {
+            selected = Math.max(props.options.findIndex(e => e.value === props.defaultValue), 0);
+        }
         this.state = {
+            selected,
             original: selected,
             hover: selected
         };
@@ -80,22 +86,8 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
         this.dropdownElement = list;
     }
 
-    protected resolveSelected(props: SelectComponentProps): number {
-        let selected = 0;
-        if (typeof props.value === 'number') {
-            selected = props.value;
-        } else if (typeof props.value === 'string') {
-            selected = Math.max(props.options.findIndex(e => e.value === props.value), 0);
-        }
-
-        return selected;
-    }
-
-    override componentWillReceiveProps(nextProps: SelectComponentProps): void {
-        this.selected = this.resolveSelected(nextProps);
-    }
     get value(): string | number | undefined {
-        return this.props.options[this.selected].value ?? this.selected;
+        return this.props.options[this.state.selected].value ?? this.state.selected;
     }
 
     set value(value: string | number | undefined) {
@@ -106,8 +98,8 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
             index = this.props.options.findIndex(e => e.value === value);
         }
         if (index >= 0) {
-            this.selected = index;
             this.setState({
+                selected: index,
                 original: index,
                 hover: index
             });
@@ -171,7 +163,7 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
 
     override render(): React.ReactNode {
         const { options } = this.props;
-        let selected = this.selected;
+        let { selected } = this.state;
         if (options[selected]?.separator) {
             selected = this.nextNotSeparator(true);
         }
@@ -203,15 +195,16 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
         const { options } = this.props;
         const step = forward ? 1 : -1;
         const length = this.props.options.length;
-        let selected = this.selected;
+        let selected = this.state.selected;
         let count = 0;
-        while (count === 0 || (options[selected]?.separator && count < length)) {
+        do {
             selected = (selected + step) % length;
             if (selected < 0) {
                 selected = length - 1;
             }
             count++;
         }
+        while (options[selected]?.separator && count < length);
         return selected;
     }
 
@@ -220,20 +213,22 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
             return;
         }
         if (ev.key === 'ArrowUp') {
-            this.selected = this.nextNotSeparator(false);
+            const selected = this.nextNotSeparator(false);
             this.setState({
-                hover: this.selected
+                selected,
+                hover: selected
             });
         } else if (ev.key === 'ArrowDown') {
             if (this.state.dimensions) {
-                this.selected = this.nextNotSeparator(true);
+                const selected = this.nextNotSeparator(true);
                 this.setState({
-                    hover: this.selected
+                    selected,
+                    hover: selected
                 });
             } else {
                 this.toggleVisibility();
-                this.selected = 0;
                 this.setState({
+                    selected: 0,
                     hover: 0,
                 });
             }
@@ -241,7 +236,7 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
             if (!this.state.dimensions) {
                 this.toggleVisibility();
             } else {
-                const selected = this.selected;
+                const selected = this.state.selected;
                 this.selectOption(selected, this.props.options[selected]);
             }
         } else if (ev.key === 'Escape' || ev.key === 'Tab') {
@@ -278,9 +273,9 @@ export class SelectComponent extends React.Component<SelectComponentProps, Selec
 
     protected hide(index?: number): void {
         const selectedIndex = index === undefined ? this.state.original : index;
-        this.selected = selectedIndex;
         this.setState({
             dimensions: undefined,
+            selected: selectedIndex,
             original: selectedIndex,
             hover: selectedIndex
         });

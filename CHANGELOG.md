@@ -14,6 +14,7 @@
   - Removed optional interface property `DebugConfiguration.dynamic`.
   - Added the following method to the interface `DebugService`: `fetchDynamicDebugConfiguration` as well as the property `onDidChangedDebugConfigurationProviders`.
   - Removed method DebugPrefixConfiguration#runDynamicConfiguration
+* [core] The interface `SelectComponentProps` was updated to rename a property from `value` to `defaultValue`
 
 ## v1.26.0 - 5/26/2022
 

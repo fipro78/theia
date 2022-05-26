@@ -41,6 +41,7 @@ export class DebugConfigurationSelect extends React.Component<DebugConfiguration
     protected static readonly NO_CONFIGURATION = '__NO_CONF__';
     protected static readonly ADD_CONFIGURATION = '__ADD_CONF__';
 
+    private readonly selectRef = React.createRef<SelectComponent>();
     private manager: DebugConfigurationManager;
     private quickInputService: QuickInputService;
 
@@ -64,10 +65,11 @@ export class DebugConfigurationSelect extends React.Component<DebugConfiguration
     override render(): React.ReactNode {
         return <SelectComponent
             options={this.renderOptions()}
-            value={this.currentValue}
+            defaultValue={this.currentValue}
             onChange={option => this.setCurrentConfiguration(option)}
             onFocus={() => this.refreshDebugConfigurations()}
             onBlur={() => this.refreshDebugConfigurations()}
+            ref={this.selectRef}
         />;
     }
 
@@ -154,6 +156,7 @@ export class DebugConfigurationSelect extends React.Component<DebugConfiguration
                 providerTypes.push(type);
             }
         }
+        this.selectRef.current!.value = this.currentValue;
         this.setState({ providerTypes, currentValue: this.currentValue });
     };
 
