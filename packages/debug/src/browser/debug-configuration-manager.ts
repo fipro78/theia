@@ -242,7 +242,7 @@ export class DebugConfigurationManager {
     }
 
     /**
-     * @deprecated since 1.26.0
+     * @deprecated since v1.27.0
      */
     find(name: string, workspaceFolderUri: string): DebugSessionOptions | undefined;
     /**
@@ -467,7 +467,7 @@ export class DebugConfigurationManager {
         const data = await this.storage.getData<DebugConfigurationManager.Data>('debug.configurations', {});
         this.resolveRecentDynamicOptionsFromData(data.recentDynamicOptions);
 
-        // Between versions 1.25 and 1.26, the expected format of the data changed so that old stored data
+        // Between versions v1.26 and v1.27, the expected format of the data changed so that old stored data
         // may not contain the configuration key.
         if (data.current && 'configuration' in data.current) {
             this.current = this.find(data.current.configuration, data.current.workspaceFolderUri, data.current.providerType);
