@@ -4,6 +4,11 @@
 
 - [Previous Changelogs](https://github.com/eclipse-theia/theia/tree/master/doc/changelogs/)
 
+<a name="breaking_changes_1.26.0">[Breaking Changes:](#breaking_changes_1.26.0)</a>
+- Moved interface `DebugPluginConfiguration`
+from  `@theia/debug/lib/browser/debug-contribution`  
+to    `@theia/debug/lib/common/debug-configuration`
+
 ## v1.26.0 - 5/26/2022
 
 - [application-package] introduce application config prop `validatePreferencesSchema` to control whether to validate preferences on start [#11189](https://github.com/eclipse-theia/theia/pull/11189)
