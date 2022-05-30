@@ -4,10 +4,9 @@
 
 - [Previous Changelogs](https://github.com/eclipse-theia/theia/tree/master/doc/changelogs/)
 
-<a name="breaking_changes_1.26.0">[Breaking Changes:](#breaking_changes_1.26.0)</a>
-- Moved interface `DebugPluginConfiguration`
-from  `@theia/debug/lib/browser/debug-contribution`  
-to    `@theia/debug/lib/common/debug-configuration`
+## v1.27.0 - Unreleased
+<a name="breaking_changes_1.27.0">[Breaking Changes:](#breaking_changes_1.27.0)</a>
+- [plugin] moved interface `DebugPluginConfiguration` from `@theia/debug/lib/browser/debug-contribution` to `@theia/debug/lib/common/debug-configuration` [#11224](https://github.com/eclipse-theia/theia/pull/11224)
 
 ## v1.26.0 - 5/26/2022
 
