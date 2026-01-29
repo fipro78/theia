@@ -17,6 +17,7 @@
 import { nls, PreferenceSchema } from '@theia/core';
 
 export const MCP_SERVERS_PREF = 'ai-features.mcp.mcpServers';
+export const MCP_USE_WORKSPACE_AS_ROOT_PREF = 'ai-features.mcp.useWorkspaceAsRoot';
 
 export const McpServersPreferenceSchema: PreferenceSchema = {
     properties: {
@@ -112,6 +113,13 @@ Example configuration:\n\
                 },
                 required: []
             }
+        },
+        [MCP_USE_WORKSPACE_AS_ROOT_PREF]: {
+            title: nls.localize('theia/ai/core/useWorkspaceAsRoot/title', 'Use Workspace as Root'),
+            markdownDescription: nls.localize('theia/ai/core/useWorkspaceAsRoot/mdDescription',
+                'Whether to use the workspace as the root for MCP servers.'),
+            type: 'boolean',
+            default: true
         }
     }
 };
